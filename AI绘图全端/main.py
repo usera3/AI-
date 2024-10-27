@@ -152,7 +152,7 @@ def generate_image():
     print(X_Prodia_Key)
     image_url = generate_image_with_prodia(style_preset=style_preset, upscale=upscale, prompt=prompt, model=model, negative_prompt=negative_prompt, steps=steps, cfg_scale=cfg_scale, seed=seed, sampler=sampler, width=width, height=height, X_Prodia_Key=X_Prodia_Key)
     image_url=upload_image_to_imgbb(image_url)
-    image_url=upload_image_to_api(image_url)
+    # image_url=upload_image_to_api(image_url)
 
     if image_url:
         a=index.decrement_balance(provided_key)
