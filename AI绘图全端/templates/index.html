@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Stable Diffusion</title>
+    <style>
+
+        /* 设置图片容器的样式 */
+        #image-container {
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+        }
+
+        #image-container img {
+            position: relative;
+            top: -700px; /* 往上靠一点，可根据实际需求调整数值 */
+            left: -80px; /* 往左靠一点，可根据实际需求调整数值 */
+            width: 600px;
+            height: 600px;
+            margin: auto;
+        }
+
+        /* 输入框、下拉框和按钮的通用悬停样式 */
+        input[type="text"],
+        input[type="number"],
+        select,
+        button {
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:hover,
+        input[type="number"]:hover,
+        select:hover {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            color: #fff;
+            border-color: #0056b3;
+            cursor: pointer;
+        }
+
+        /* 设置彩色按钮样式 */
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+        }
+
+        label,
+        input,
+        button {
+            display: block;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100px;
+        }
+
+        label {
+            width: 150px;
+        }
+
+        input[type="text"]#prompt,
+        input[type="text"]#negative_prompt {
+            resize: both;
+            min-width: 200px;
+            min-height: 100px;
+            text-align: left; /* 设置文本左对齐 */
+            word-wrap: break-word; /* 到达边界自动换行 */
+            white-space: pre-wrap; /* 保留空白字符并允许自动换行 */
+        }
+    </style>
+    <script>
+        // 在页面加载时尝试从本地存储中恢复数据
+        document.addEventListener('DOMContentLoaded', function () {
+			const storedNickname = localStorage.getItem('storedNickname');
+			const storedPassword = localStorage.getItem('storedPassword');
+            const storedPrompt = localStorage.getItem('prompt');
+            const storedNegativePrompt = localStorage.getItem('negative_prompt');
+            const storedModel = localStorage.getItem('model');
+            const storedSampler = localStorage.getItem('sampler');
+            const storedStylePreset = localStorage.getItem('style_preset');
+            const storedUpscale = localStorage.getItem('upscale') === 'true';
+            const storedSteps = localStorage.getItem('steps') || '28';
+            const storedCfgScale = localStorage.getItem('cfg_scale') || '7';
+            const storedSeed = localStorage.getItem('seed') || '-1';
+            const storedWidth = localStorage.getItem('width') || '1024';
+            const storedHeight = localStorage.getItem('height') || '1024';
+            const storedMyKey = localStorage.getItem('my_key') || '';
+
+            document.getElementById('prompt').value = storedPrompt || '';
+            document.getElementById('negative_prompt').value = storedNegativePrompt || '';
+            // 设置模型下拉框
+            const modelSelect = document.getElementById('model');
+            modelSelect.innerHTML = '';
+            const modelOptions = [
+                "3Guofeng3_v34.safetensors [50f420de]",
+                "absolutereality_V16.safetensors [37db0fc3]",
+                "absolutereality_v181.safetensors [3d9d4d2b]",
+                "amIReal_V41.safetensors [0a8a2e61]",
+                "analog-diffusion-1.0.ckpt [9ca13f02]",
+                "aniverse_v30.safetensors [579e6f85]",
+                "anythingv3_0-pruned.ckpt [2700c435]",
+                "anything-v4.5-pruned.ckpt [65745d25]",
+                "anythingV5_PrtRE.safetensors [893e49b9]",
+                "AOM3A3_orangemixs.safetensors [9600da17]",
+                "blazing_drive_v10g.safetensors [ca1c1eab]",
+                "breakdomain_I2428.safetensors [43cc7d2f]",
+                "breakdomain_M2150.safetensors [15f7afca]",
+                "cetusMix_Version35.safetensors [de2f2560]",
+                "childrensStories_v13D.safetensors [9dfaabcb]",
+                "childrensStories_v1SemiReal.safetensors [a1c56dbb]",
+                "childrensStories_v1ToonAnime.safetensors [2ec7b88b]",
+                "Counterfeit_v30.safetensors [9e2a8f19]",
+                "cuteyukimixAdorable_midchapter3.safetensors [04bdffe6]",
+                "cyberrealistic_v33.safetensors [82b0d085]",
+                "dalcefo_v4.safetensors [425952fe]",
+                "deliberate_v2.safetensors [10ec4b29]",
+                "deliberate_v3.safetensors [afd9d2d4]",
+                "dreamlike-anime-1.0.safetensors [4520e090]",
+                "dreamlike-diffusion-1.0.safetensors [5c9fd6e0]",
+                "dreamlike-photoreal-2.0.safetensors [fdcf65e7]",
+                "dreamshaper_6BakedVae.safetensors [114c8abb]",
+                "dreamshaper_7.safetensors [5cf5ae06]",
+                "dreamshaper_8.safetensors [9d40847d]",
+                "edgeOfRealism_eorV20.safetensors [3ed5de15]",
+                "EimisAnimeDiffusion_V1.ckpt [4f828a15]",
+                "elldreths-vivid-mix.safetensors [342d9d26]",
+                "epicphotogasm_xPlusPlus.safetensors [1a8f6d35]",
+                "epicrealism_naturalSinRC1VAE.safetensors [90a4c676]",
+                "epicrealism_pureEvolutionV3.safetensors [42c8440c]",
+                "ICantBelieveItsNotPhotography_seco.safetensors [4e7a3dfd]",
+                "indigoFurryMix_v75Hybrid.safetensors [91208cbb]",
+                "juggernaut_aftermath.safetensors [5e20c455]",
+                "lofi_v4.safetensors [ccc204d6]",
+                "lyriel_v16.safetensors [68fceea2]",
+                "majicmixRealistic_v4.safetensors [29d0de58]",
+                "mechamix_v10.safetensors [ee685731]",
+                "meinamix_meinaV9.safetensors [2ec66ab0]",
+                "meinamix_meinaV11.safetensors [b56ce717]",
+                "neverendingDream_v122.safetensors [f964ceeb]",
+                "openjourney_V4.ckpt [ca2f377f]",
+                "pastelMixStylizedAnime_pruned_fp16.safetensors [793a26e8]",
+                "portraitplus_V1.0.safetensors [1400e684]",
+                "protogenx34.safetensors [5896f8d5]",
+                "Realistic_Vision_V1.4-pruned-fp16.safetensors [8d21810b]",
+                "Realistic_Vision_V2.0.safetensors [79587710]",
+                "Realistic_Vision_V4.0.safetensors [29a7afaa]",
+                "Realistic_Vision_V5.0.safetensors [614d1063]",
+                "Realistic_Vision_V5.1.safetensors [a0f13c83]",
+                "redshift_diffusion-V10.safetensors [1400e684]",
+                "revAnimated_v122.safetensors [3f4fefd9]",
+                "rundiffusionFX25D_v10.safetensors [cd12b0ee]",
+                "rundiffusionFX_v10.safetensors [cd4e694d]",
+                "sdv1_4.ckpt [7460a6fa]",
+                "v1-5-pruned-emaonly.safetensors [d7049739]",
+                "v1-5-inpainting.safetensors [21c7ab71]",
+                "shoninsBeautiful_v10.safetensors [25d8c546]",
+                "theallys-mix-ii-churned.safetensors [5d9225a4]",
+                "timeless-1.0.ckpt [7c4971d4]",
+                "toonyou_beta6.safetensors [980f6b15]"
+            ];
+            modelOptions.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                if (option === storedModel) {
+                    opt.selected = true;
+                }
+                modelSelect.appendChild(opt);
+            });
+            // 设置采样器下拉框
+            const samplerSelect = document.getElementById('sampler');
+            samplerSelect.innerHTML = '';
+            const samplerOptions = [
+                "DPM++ 2M Karras",
+                "DPM++ SDE Karras",
+                "DPM++ 2M SDE Exponential",
+                "DPM++ 2M SDE Karras",
+                "Euler a",
+                "Euler",
+                "LMS",
+                "Heun",
+                "DPM2",
+                "DPM2 a",
+                "DPM++ 2S a",
+                "DPM++ 2M",
+                "DPM++ SDE",
+                "DPM++ 2M SDE",
+                "DPM++ 2M SDE Heun",
+                "DPM++ 2M SDE Heun Karras",
+                "DPM++ 2M SDE Heun Exponential",
+                "DPM++ 3M SDE",
+                "DPM++ 3M SDE Karras",
+                "DPM++ 3M SDE Exponential",
+                "DPM fast",
+                "DPM adaptive",
+                "LMS Karras",
+                "DPM2 Karras",
+                "DPM2 a Karras",
+                "DPM++ 2S a Karras",
+                "Restart",
+                "DDIM",
+                "PLMS",
+                "UniPC"
+            ];
+            samplerOptions.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                if (option === storedSampler) {
+                    opt.selected = true;
+                }
+                samplerSelect.appendChild(opt);
+            });
+            // 设置风格预设下拉框
+            const stylePresetSelect = document.getElementById('style_preset');
+            stylePresetSelect.innerHTML = '';
+            const stylePresetOptions = [
+                "3d-model", "analog-film", "anime", "cinematic", "comic-book", "digital-art", "enhance", "fantasy-art", "isometric", "line-art", "low-poly", "neon-punk", "origami", "photographic", "pixel-art", "texture", "craft-clay"
+            ];
+            stylePresetOptions.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                if (option === storedStylePreset) {
+                    opt.selected = true;
+                }
+                stylePresetSelect.appendChild(opt);
+            });
+            // 设置升频下拉框
+            const upscaleSelect = document.getElementById('upscale');
+            upscaleSelect.innerHTML = '';
+            const upscaleOptions = [
+                { value: true, text: 'True' },
+                { value: false, text: 'False' }
+            ];
+            upscaleOptions.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.textContent = option.text;
+                if (option.value === storedUpscale) {
+                    opt.selected = true;
+                }
+                upscaleSelect.appendChild(opt);
+            });
+            // 设置 steps 输入框
+            document.getElementById('steps').value = storedSteps;
+            // 设置 cfg_scale 输入框
+            document.getElementById('cfg_scale').value = storedCfgScale;
+            // 设置 seed 输入框
+            document.getElementById('seed').value = storedSeed;
+            // 设置 width 和 height 输入框
+            document.getElementById('width').value = storedWidth;
+            document.getElementById('height').value = storedHeight;
+            // 设置 my_key 输入框
+			document.getElementById('my_key').type = 'password';
+            document.getElementById('my_key').value = storedMyKey;
+
+			// 获取昵称并显示问候语
+			if (storedNickname) {
+				const greeting = document.createElement('p');
+				greeting.textContent = `亲爱的${storedNickname},欢迎回家！Stable Diffusion 与你共筑图像之梦！`;
+				document.body.appendChild(greeting);
+			}
+
+			// 获取密钥
+			if (storedNickname && storedPassword) {
+				fetch('http://192.168.10.9:20000/get_key', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ nickname: storedNickname, password: storedPassword })
+				})
+				   .then(response => response.json())
+				   .then(data => {
+						if (data.key) {
+							// 如果获取到密钥，更新 my_key 输入框的值
+							document.getElementById('my_key').value = data.key;
+							// 如果有余额信息，显示在页面上
+							if (data.balance) {
+								const balanceDisplay = document.createElement('p');
+								balanceDisplay.textContent = `积分：${data.balance}`;
+								document.body.appendChild(balanceDisplay);
+							}
+						} else {
+							console.error(data.message);
+						}
+					});
+			}
+
+        });
+
+        function generateImage() {
+            const generateButton = document.getElementById('generateImageButton');
+            generateButton.disabled = true;
+            generateButton.style.backgroundColor = '#aaa';
+            const prompt = document.getElementById('prompt').value;
+            const negative_prompt = document.getElementById('negative_prompt').value;
+            const model = document.getElementById('model').value;
+            const sampler = document.getElementById('sampler').value;
+            const style_preset = document.getElementById('style_preset').value;
+            const upscale = document.getElementById('upscale').value === 'true';
+            const steps = parseInt(document.getElementById('steps').value) || 28;
+            const cfg_scale = parseInt(document.getElementById('cfg_scale').value) || 7;
+            const seed = parseInt(document.getElementById('seed').value) || -1;
+            const width = parseInt(document.getElementById('width').value) || 1024;
+            const height = parseInt(document.getElementById('height').value) || 1024;
+            const my_key = document.getElementById('my_key').value;
+
+            const data = {
+                'prompt': prompt,
+                'negative_prompt': negative_prompt,
+                'model': model,
+                'sampler': sampler,
+                'style_preset': style_preset,
+                'upscale': upscale,
+                'steps': steps,
+                'cfg_scale': cfg_scale,
+                'seed': seed,
+                'width': width,
+                'height': height,
+                'my_key': my_key
+            };
+
+            fetch("http://192.168.10.9:20000/generate_image", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+               .then(response => response.json())
+               .then(result => {
+                    const imageUrl = result.image_url;
+                    if (imageUrl) {
+                        // 创建图片容器并将结果显示在右侧
+                        document.getElementById('result').innerHTML = `<div id="image-container"><img src="${imageUrl}" alt="生成的图像"></div>`;
+                    } else {
+                        document.getElementById('result').innerHTML = "未获取到图像 URL。";
+                    }
+                    // 保存数据到本地存储
+                    localStorage.setItem('prompt', prompt);
+                    localStorage.setItem('negative_prompt', negative_prompt);
+                    localStorage.setItem('model', model);
+                    localStorage.setItem('sampler', sampler);
+                    localStorage.setItem('style_preset', style_preset);
+                    localStorage.setItem('upscale', upscale);
+                    localStorage.setItem('steps', steps);
+                    localStorage.setItem('cfg_scale', cfg_scale);
+                    localStorage.setItem('seed', seed);
+                    localStorage.setItem('width', width);
+                    localStorage.setItem('height', height);
+                    localStorage.setItem('my_key', my_key);
+                    generateButton.disabled = false;
+                    generateButton.style.backgroundColor = '#007bff';
+                })
+               .catch(error => {
+                    document.getElementById('result').innerHTML = `请求失败：${error}`;
+                    generateButton.disabled = false;
+                    generateButton.style.backgroundColor = '#007bff';
+                });
+        }
+
+        function toggleMyKeyVisibility() {
+            const myKeyInput = document.getElementById('my_key');
+            if (myKeyInput.type === 'text') {
+                myKeyInput.type = 'password';
+            } else {
+                myKeyInput.type = 'text';
+            }
+        }
+    </script>
+<head>
+  <style>
+    h1 {
+      text-align: center;
+      color: #ff69b4; /* 这里设置为粉红色，你可以根据喜好修改颜色值 */
+    }
+  </style>
+</head>
+
+<body style="background-image: url('https://api.paugram.com/wallpaper/'); background-size: cover; background-repeat: no-repeat;">
+<h1>Stable Diffusion</h1>
+<span style="position: relative; top: -10px; border: 1px solid orange; padding: 5px 10px; border-radius: 4px;">
+    <a href="http://192.168.10.9:20000/login" style="color: green; text-decoration: none;">用户</a>
+</span>
+
+<span style="position: relative; top: -10px; border: 1px solid orange; padding: 5px 10px; border-radius: 4px;">
+    <a href="http://192.168.10.9:20000/docs" style="color:green; text-decoration: none;margin-left: 10px;">接口文档</a>
+</span>
+<span style="position: relative; top: -10px; border: 1px solid orange; padding: 5px 10px; border-radius: 4px;">
+    <a href="http://192.168.10.9:20000/shop" style="color: green; text-decoration: none;">商店</a>
+</span>
+<label for="prompt">提示词：</label><textarea id="prompt"></textarea><br>
+
+<label for="negative_prompt">负面提示词：</label><textarea id="negative_prompt"></textarea><br>
+<label for="model">模型：</label><select id="model"></select><br>
+<label for="sampler">采样器：</label><select id="sampler"></select><br>
+<label for="style_preset">风格：</label><select id="style_preset"></select><br>
+<label for="upscale">放大：</label><select id="upscale"></select><br>
+<label for="steps">步数：</label><input type="number" id="steps" min="1"><br>
+<label for="cfg_scale">cfg 提示相关度：</label><input type="number" id="cfg_scale" min="1"><br>
+<label for="seed">种子：</label><input type="number" id="seed"><br>
+<label for="width">宽度：</label><input type="number" id="width" min="512" max="1024" value="1024"><br>
+<label for="height">高度：</label><input type="number" id="height" min="512" max="1024" value="1024"><br>
+<label for="my_key">APIkey：</label><input type="text" id="my_key"><br>
+<button onclick="toggleMyKeyVisibility()">显示/隐藏密钥</button><br>
+<button id="generateImageButton" onclick="generateImage()">生成图像</button><br>
+<div id="result"></div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录/注册</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        h2 {
+            color: #4CAF50;
+            text-shadow: 2px 2px 4px #aaa;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 5px;
+            width: 250px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+       .message {
+            color: red;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Stable Diffusion</h2>
+    <form id="loginForm">
+        <label for="nickname">昵称：</label>
+        <input type="text" id="nickname" required><br>
+        <label for="password">密码：</label>
+        <input type="password" id="password" required><br>
+        <button type="submit">登录/注册</button>
+    </form>
+    <div id="messageContainer"></div>
+
+    <script>
+        // 在页面加载时尝试从本地存储中恢复昵称和密码
+        document.addEventListener('DOMContentLoaded', function () {
+            const storedNickname = localStorage.getItem('storedNickname');
+            const storedPassword = localStorage.getItem('storedPassword');
+            if (storedNickname) {
+                document.getElementById('nickname').value = storedNickname;
+            }
+            if (storedPassword) {
+                document.getElementById('password').value = storedPassword;
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const nickname = document.getElementById('nickname').value;
+            const password = document.getElementById('password').value;
+            // 使用正则表达式检查密码是否包含数字、字母且大小写混合，并且长度大于等于8
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            if (!passwordRegex.test(password)) {
+                const messageContainer = document.getElementById('messageContainer');
+                messageContainer.textContent = '密码必须包含数字、字母且大小写混合，长度大于等于8';
+                setTimeout(() => {
+                    messageContainer.textContent = '';
+                }, 3000);
+                return;
+            }
+            fetch('http://192.168.10.9:20000/login_register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nickname, password })
+            })
+           .then(response => {
+                return response.json().then(data => ({ response, data }));
+            })
+           .then(({ response, data }) => {
+                const messageContainer = document.getElementById('messageContainer');
+                let message;
+                if (response.status === 300 || response.status === 302) {
+                    message = data.message;
+                    // 如果登录成功，跳转到 index.html
+                    window.location.href = 'http://192.168.10.9:20000/index';
+                    // 将昵称和密码保存到本地存储
+                    localStorage.setItem('storedNickname', nickname);
+                    localStorage.setItem('storedPassword', password);
+                } else if (response.status === 301) {
+                    message = data.message;
+                } else {
+                    message = '未知错误！';
+                }
+                messageContainer.textContent = message;
+                setTimeout(() => {
+                    messageContainer.textContent = '';
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+
+</html>

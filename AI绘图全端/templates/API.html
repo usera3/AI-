@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title> API接口 文档</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>图像生成 API 文档</h1>
+
+    <h2>接口描述</h2>
+    <p>https://mozi101.pythonanywhere.com/generate_image 是一个 POST 请求接口，用于生成图像并返回图像的 URL。该接口接受 JSON 格式的请求数据，根据提供的参数生成图像，并进行相应的密钥验证和余额检查。如果图像生成成功且密钥正确、余额充足，将返回生成图像的 URL；否则，返回相应的错误信息。</p>
+
+    <h2>请求方法</h2>
+    <p>POST</p>
+
+    <h2>请求参数</h2>
+    <table>
+        <tr>
+            <th>参数名称</th>
+            <th>类型</th>
+            <th>是否必填</th>
+            <th>描述</th>
+        </tr>
+        <tr>
+            <td>prompt</td>
+            <td>string</td>
+            <td>是</td>
+            <td>图像生成的提示词。</td>
+        </tr>
+        <tr>
+            <td>style_preset</td>
+            <td>string</td>
+            <td>是</td>
+            <td>图像的风格预设。</td>
+        </tr>
+        <tr>
+            <td>upscale</td>
+            <td>boolean</td>
+            <td>是</td>
+            <td>是否进行图像的 upscale 处理。</td>
+        </tr>
+        <tr>
+            <td>model</td>
+            <td>string</td>
+            <td>是</td>
+            <td>要使用的图像生成模型。</td>
+        </tr>
+        <tr>
+            <td>negative_prompt</td>
+            <td>string</td>
+            <td>是</td>
+            <td>图像生成的负面提示词。</td>
+        </tr>
+        <tr>
+            <td>steps</td>
+            <td>integer</td>
+            <td>是</td>
+            <td>图像生成的步数。</td>
+        </tr>
+        <tr>
+            <td>cfg_scale</td>
+            <td>integer</td>
+            <td>是</td>
+            <td>配置缩放参数。</td>
+        </tr>
+        <tr>
+            <td>seed</td>
+            <td>integer</td>
+            <td>是</td>
+            <td>随机种子，若为 -1 则随机生成。</td>
+        </tr>
+        <tr>
+            <td>sampler</td>
+            <td>string</td>
+            <td>是</td>
+            <td>采样器名称。</td>
+        </tr>
+        <tr>
+            <td>width</td>
+            <td>integer</td>
+            <td>是</td>
+            <td>生成图像的宽度。</td>
+        </tr>
+        <tr>
+            <td>height</td>
+            <td>integer</td>
+            <td>是</td>
+            <td>生成图像的高度。</td>
+        </tr>
+        <tr>
+            <td>my_key</td>
+            <td>string</td>
+            <td>是</td>
+            <td>用于身份验证的密钥。</td>
+        </tr>
+    </table>
+
+    <h2>响应</h2>
+    <ul>
+        <li><strong>成功生成图像</strong>:
+            <ul>
+                <li>状态码：200</li>
+                <li>响应内容：
+                    <pre>
+{
+    "image_url": "生成图像的 URL"
+}
+                    </pre>
+                </li>
+            </ul>
+        </li>
+        <li><strong>密钥错误</strong>:
+            <ul>
+                <li>状态码：403</li>
+                <li>响应内容：
+                    <pre>
+{
+    "error": "密钥错误，无法继续"
+}
+                    </pre>
+                </li>
+            </ul>
+        </li>
+        <li><strong>余额不足</strong>:
+            <ul>
+                <li>状态码：422</li>
+                <li>响应内容：
+                    <pre>
+{
+    "error": "身份通过但余额不足，无法继续"
+}
+                    </pre>
+                </li>
+            </ul>
+        </li>
+        <li><strong>服务端结算异常</strong>:
+            <ul>
+                <li>状态码：501</li>
+                <li>响应内容：
+                    <pre>
+{
+    "error": "服务端结算异常,中止服务"
+}
+                    </pre>
+                </li>
+            </ul>
+        </li>
+        <li><strong>图像生成失败</strong>:
+            <ul>
+                <li>状态码：500</li>
+                <li>响应内容：
+                    <pre>
+{
+    "error": "图像生成失败"
+}
+                    </pre>
+                </li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>注意事项</h2>
+    <ul>
+        <li>确保提供的参数符合要求，尤其是必填参数不能缺失。</li>
+        <li>密钥验证和余额检查是生成图像的前提条件，如果不满足将无法生成图像,注册登录后将自动生成密钥。</li>
+        <li>图像生成过程可能会受到多种因素影响，如网络问题、API 服务不稳定等，可能导致图像生成失败或响应延迟。</li>
+    </ul>
+</body>
+
+</html>
