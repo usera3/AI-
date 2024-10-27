@@ -13,7 +13,7 @@
 - **依赖环境**：“本项目基于Python 3.9开发，运行时需要安装requests，flask和flask_cors等库。”
 - **安装步骤**：。
     - **从源码安装**：
-        - “首先，克隆项目仓库到本地：`git clone https://github.com/usera3/AI绘图全端.git`”
+        - “首先，克隆项目仓库到本地：`git clone https://github.com/usera3/AI-.git`”
         - “然后，进入项目目录：`cd AI绘图全端`”
         - “接着，安装所需依赖：`pip install -r requirements.txt`”
     - **通过包管理器安装**：“可使用pip直接安装：`pip install AI绘图全端`”
