@@ -1,3 +1,5 @@
+# Copyright 2024.10.23 [usera3]
+# Licensed under the MIT License (see LICENSE file)
 import random
 import time
 
